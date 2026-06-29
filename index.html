@@ -3,676 +3,968 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>哲学思想タイプ診断</title>
+<title>UTTI診断</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sw:220px;--bg:#0d1117;--surf:#161b22;--card:#1c2128;
+  --bdr:#30363d;--text:#e6edf3;--sub:#8b949e;--mut:#6e7681;
+  --acc:#58a6ff;--r:12px;
+  --font:-apple-system,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);display:flex;min-height:100vh}
 
-  :root {
-    --bg:        #0c0c18;
-    --surface:   #14142a;
-    --border:    #272748;
-    --text:      #e8e8f0;
-    --sub:       #8b8baa;
-    --accent:    #7c3aed;
-    --accent2:   #2563eb;
-  }
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sw);flex-shrink:0;background:var(--surf);
+  border-right:1px solid var(--bdr);display:flex;flex-direction:column;
+  position:fixed;top:0;bottom:0;left:0;z-index:200;
+  transition:transform .3s ease;
+}
+.sb-logo{padding:24px 18px 18px;border-bottom:1px solid var(--bdr)}
+.sb-logo h2{font-size:14px;font-weight:800;letter-spacing:.04em;color:var(--text);margin-bottom:4px}
+.sb-logo p{font-size:11px;color:var(--mut)}
+.sb-nav{flex:1;padding:10px 8px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  border-radius:8px;cursor:pointer;font-size:14px;color:var(--sub);
+  font-weight:500;transition:background .12s,color .12s;margin-bottom:2px;
+  user-select:none;
+}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:rgba(88,166,255,.12);color:var(--acc)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.sb-foot{padding:14px 18px;border-top:1px solid var(--bdr);font-size:11px;color:var(--mut)}
 
-  body {
-    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 24px 16px 60px;
-  }
+/* ── MOB HEADER ── */
+.mob-header{
+  display:none;position:fixed;top:0;left:0;right:0;height:50px;
+  background:var(--surf);border-bottom:1px solid var(--bdr);
+  align-items:center;padding:0 14px;z-index:300;gap:10px;
+}
+.hamburger{background:none;border:none;cursor:pointer;color:var(--text);font-size:20px;padding:4px;display:flex;align-items:center}
+.mob-title{font-size:14px;font-weight:700}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150}
+.overlay.on{display:block}
 
-  .container { width: 100%; max-width: 680px; }
+/* ── MAIN ── */
+.main{margin-left:var(--sw);flex:1;min-height:100vh;overflow-x:hidden}
+.page{display:none}
+.page.active{display:block}
 
-  /* ===== SCREEN TRANSITIONS ===== */
-  .screen { display: none; animation: fadeIn .3s ease; }
-  .screen.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+/* ── START ── */
+.start-wrap{max-width:680px;margin:0 auto;padding:80px 40px;text-align:center}
+.start-badge{
+  display:inline-block;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);
+  color:var(--acc);border-radius:20px;padding:4px 16px;font-size:11px;font-weight:700;
+  letter-spacing:.12em;margin-bottom:22px;
+}
+.start-title{
+  font-size:34px;font-weight:800;line-height:1.2;margin-bottom:14px;letter-spacing:-.01em;
+  background:linear-gradient(135deg,#e6edf3 60%,#8b949e);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.start-sub{font-size:14px;color:var(--sub);line-height:1.8;margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto}
+.start-meta{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:44px}
+.meta-chip{
+  display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub);
+  background:var(--card);border:1px solid var(--bdr);border-radius:20px;padding:5px 14px;
+}
+.btn-start{
+  background:var(--acc);color:#0d1117;border:none;padding:14px 52px;
+  font-size:16px;font-weight:700;border-radius:50px;cursor:pointer;letter-spacing:.03em;
+  transition:all .2s;font-family:var(--font);
+}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(88,166,255,.35)}
 
-  /* ===== START ===== */
-  #start { text-align: center; padding: 80px 20px; }
-  .logo { font-size: 52px; margin-bottom: 20px; }
-  h1 {
-    font-size: 26px; font-weight: 800; letter-spacing: .04em;
-    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    margin-bottom: 12px;
-  }
-  .subtitle { color: var(--sub); font-size: 14px; line-height: 1.8; margin-bottom: 48px; }
-  .meta-info {
-    display: inline-flex; gap: 24px; margin-bottom: 40px;
-    font-size: 12px; color: var(--sub);
-  }
-  .meta-info span { display: flex; align-items: center; gap: 6px; }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border: none; padding: 16px 52px;
-    font-size: 17px; font-weight: 700; border-radius: 50px;
-    cursor: pointer; letter-spacing: .05em;
-    transition: transform .2s, box-shadow .2s;
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,.4); }
+/* ── QUIZ LIGHT THEME ── */
+#p-quiz{background:#f0f4f8;min-height:100vh}
+.quiz-page-wrap{max-width:760px;margin:0 auto;padding:36px 24px 100px}
+.quiz-page-head{margin-bottom:28px}
+.qp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.qp-label{font-size:13px;font-weight:700;color:#1e293b}
+.qp-count{font-size:12px;color:#64748b}
+.prog-track-light{height:6px;background:#e2e8f0;border-radius:6px;overflow:hidden}
+.prog-fill-light{height:100%;border-radius:6px;background:#22c55e;transition:width .5s ease}
 
-  /* ===== QUIZ ===== */
-  #quiz { padding-top: 8px; }
-  .top-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .q-counter { font-size: 12px; color: var(--sub); font-weight: 600; }
-  .prog-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 4px; margin: 0 16px; }
-  .prog-fill {
-    height: 100%; border-radius: 4px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    transition: width .5s ease;
-  }
+.q-row{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:28px 32px;margin-bottom:16px}
+.q-row-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:22px}
+.q-row-num{font-size:11px;font-weight:800;color:#94a3b8;letter-spacing:.1em;padding-top:3px;min-width:30px;flex-shrink:0}
+.q-row-text{font-size:17px;font-weight:500;color:#1e293b;line-height:1.65}
 
-  .q-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 36px; margin-bottom: 20px;
-  }
-  .q-label {
-    font-size: 11px; color: var(--accent); font-weight: 700;
-    letter-spacing: .15em; text-transform: uppercase; margin-bottom: 10px;
-  }
-  .q-text { font-size: 19px; line-height: 1.65; font-weight: 600; }
+/* 7-bubble scale */
+.scale7-ends{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:12px}
+.scale7-ends .end-a{color:#15803d}
+.scale7-ends .end-d{color:#6d28d9}
+.scale7-bubbles{display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 0}
+.b7{
+  border-radius:50%;border:2.5px solid #cbd5e1;background:#f8fafc;
+  cursor:pointer;transition:transform .12s,background .12s,border-color .12s;
+  flex-shrink:0;display:block;padding:0;
+}
+.b7:hover{transform:scale(1.12)}
+.b7.agree:hover{border-color:#22c55e;background:rgba(34,197,94,.18)}
+.b7.dis:hover{border-color:#7c3aed;background:rgba(124,58,237,.18)}
+.b7.neutral:hover{border-color:#94a3b8;background:rgba(148,163,184,.15)}
+.b7.sel-a{background:#22c55e;border-color:#22c55e}
+.b7.sel-d{background:#7c3aed;border-color:#7c3aed}
+.b7.sel-n{background:#94a3b8;border-color:#94a3b8}
+.b7.s1,.b7.s7{width:52px;height:52px}
+.b7.s2,.b7.s6{width:42px;height:42px}
+.b7.s3,.b7.s5{width:34px;height:34px}
+.b7.s4{width:26px;height:26px}
 
-  .choices { display: flex; flex-direction: column; gap: 10px; }
-  .choice-btn {
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); padding: 16px 20px;
-    border-radius: 14px; cursor: pointer;
-    text-align: left; font-size: 14px; line-height: 1.4;
-    display: flex; align-items: center; gap: 14px;
-    transition: background .15s, border-color .15s, transform .15s;
-  }
-  .choice-btn:hover { background: #1e1e38; border-color: var(--accent); transform: translateX(3px); }
-  .choice-btn.selected {
-    background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(37,99,235,.18));
-    border-color: var(--accent);
-  }
-  .choice-num {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: #1e1e38; border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: var(--sub);
-    flex-shrink: 0; transition: background .15s;
-  }
-  .choice-btn.selected .choice-num { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .choice-5 { border-style: dashed; color: var(--sub); font-size: 13px; }
-  .choice-5.selected { color: var(--text); }
+.btn-undecided{
+  display:block;margin:12px auto 0;background:none;border:none;
+  color:#94a3b8;font-size:11px;font-family:var(--font);cursor:pointer;
+  text-decoration:underline;transition:color .12s;padding:2px 0;
+}
+.btn-undecided:hover{color:#64748b}
+.btn-undecided.sel-u{color:#6d28d9;font-weight:700;text-decoration:none}
 
-  .quiz-nav { margin-top: 18px; }
-  .btn-back {
-    background: transparent; border: 1px solid var(--border);
-    color: var(--sub); padding: 10px 20px;
-    border-radius: 50px; cursor: pointer;
-    font-size: 13px; font-weight: 600;
-    transition: color .15s, border-color .15s, background .15s;
-  }
-  .btn-back:hover { color: var(--text); border-color: var(--accent); background: #1e1e38; }
-  .btn-back:disabled { opacity: .35; cursor: not-allowed; }
-  .btn-back:disabled:hover { color: var(--sub); border-color: var(--border); background: transparent; }
+/* page footer nav */
+.quiz-page-foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+.btn-prev-page{
+  background:none;border:1px solid #cbd5e1;color:#64748b;
+  padding:10px 22px;border-radius:30px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:all .14s;
+}
+.btn-prev-page:hover:not(:disabled){border-color:#22c55e;color:#15803d}
+.btn-prev-page:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.btn-next-page{
+  background:#22c55e;color:#fff;border:none;
+  padding:13px 44px;font-size:15px;font-weight:700;
+  border-radius:50px;cursor:pointer;letter-spacing:.03em;
+  font-family:var(--font);transition:all .2s;
+}
+.btn-next-page:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(34,197,94,.35)}
+.btn-next-page:disabled{background:#e2e8f0;color:#94a3b8;cursor:not-allowed}
 
-  /* ===== RESULT ===== */
-  #result { padding-top: 16px; }
-  .result-hero { text-align: center; padding: 48px 20px 36px; }
-  .result-icon { font-size: 56px; margin-bottom: 16px; }
-  .result-tag { font-size: 12px; color: var(--sub); letter-spacing: .1em; margin-bottom: 8px; }
-  .result-type {
-    font-size: 32px; font-weight: 800; margin-bottom: 16px;
-    background: linear-gradient(135deg, #a78bfa, #60a5fa);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  }
+/* ── RESULT ── */
+.result-wrap{max-width:780px;margin:0 auto;padding:36px}
 
-  /* 結果説明 */
-  .desc-intro {
-    font-size: 14px; color: var(--sub); line-height: 1.8;
-    margin-bottom: 16px; padding: 0 4px; text-align: left;
-  }
-  .desc-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-left: 3px solid var(--card-accent, var(--accent));
-    border-radius: 16px; padding: 26px; margin-bottom: 16px; text-align: left;
-  }
-  .desc-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .desc-icon { font-size: 34px; line-height: 1; flex-shrink: 0; }
-  .desc-name { font-size: 18px; font-weight: 700; color: var(--text); }
-  .desc-tagline { font-size: 13px; color: var(--card-accent, var(--accent)); font-weight: 600; margin-top: 4px; }
-  .desc-body { font-size: 14px; line-height: 1.9; color: #c8c8da; }
-  .desc-phil-wrap { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
-  .desc-phil-label { font-size: 11px; color: var(--sub); letter-spacing: .08em; }
-  .phil-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .phil-tag {
-    background: #1e1e38; border: 1px solid var(--border);
-    border-radius: 16px; padding: 5px 14px; font-size: 12px; color: #c4b5fd;
-  }
+.result-hero{
+  border:1px solid var(--bdr);border-radius:20px;padding:44px 36px;
+  text-align:center;margin-bottom:20px;position:relative;overflow:hidden;
+  background:var(--card);
+}
+.result-hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% -10%,var(--hero-glow,rgba(88,166,255,.18)) 0%,transparent 65%);
+}
+.hero-code{display:flex;justify-content:center;gap:5px;margin-bottom:18px;position:relative}
+.code-box{
+  width:52px;height:68px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+}
+.code-char{font-size:26px;font-weight:800;line-height:1;color:var(--hero-color,var(--acc))}
+.code-box.weak .code-char{opacity:.4;font-size:20px}
+.code-axis{font-size:8px;color:var(--mut);letter-spacing:.04em}
+.hero-alias{font-size:26px;font-weight:800;color:var(--text);margin-bottom:8px;position:relative}
+.hero-typelabel{font-size:12px;color:var(--sub);position:relative}
 
-  .notes-area { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
-  .note {
-    background: #1e1a2e; border-left: 3px solid var(--accent);
-    border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c4b5fd; line-height: 1.6;
-  }
+.rs{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:24px;margin-bottom:16px}
+.rs-title{font-size:10px;color:var(--sub);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px}
+.rs-desc{font-size:14px;color:#c9d1d9;line-height:1.9}
 
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 28px; margin-bottom: 20px;
-  }
-  .card-title { font-size: 11px; color: var(--sub); font-weight: 700; letter-spacing: .1em; margin-bottom: 20px; }
+/* axis bars */
+.ax-row{margin-bottom:18px}
+.ax-row:last-child{margin-bottom:0}
+.ax-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.ax-pos-label{font-size:11px;font-weight:700;color:var(--text)}
+.ax-name{font-size:10px;color:var(--mut)}
+.ax-neg-label{font-size:11px;font-weight:700;color:var(--text)}
+.ax-track{
+  position:relative;height:18px;background:var(--surf);
+  border-radius:9px;overflow:hidden;border:1px solid var(--bdr);
+}
+.ax-center{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--bdr);transform:translateX(-50%);z-index:1}
+.ax-fill{position:absolute;top:0;bottom:0;border-radius:9px;transition:width 1s ease}
+.ax-fill.pos{left:50%;background:var(--acc)}
+.ax-fill.neg{right:50%;background:#f97316}
+.ax-pct{font-size:11px;color:var(--sub);text-align:right;margin-top:3px;font-weight:600}
 
-  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .bar-name { width: 90px; font-size: 12px; color: #d1d5db; flex-shrink: 0; text-align: right; font-weight: 500; }
-  .bar-track { flex: 1; background: #1e1e38; border-radius: 6px; height: 12px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 6px; transition: width 1.1s cubic-bezier(.4,0,.2,1); width: 0; }
-  .bar-pct { width: 38px; font-size: 12px; color: var(--sub); font-weight: 600; }
+/* thought bars */
+.th-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.th-name{width:130px;font-size:11px;color:#c9d1d9;flex-shrink:0;text-align:right;font-weight:500}
+.th-track{flex:1;background:var(--surf);border-radius:5px;height:9px;overflow:hidden;border:1px solid var(--bdr)}
+.th-fill{height:100%;border-radius:5px;transition:width 1.1s cubic-bezier(.4,0,.2,1);width:0}
+.th-pct{width:34px;font-size:11px;color:var(--sub);font-weight:600}
 
-  .btn-retry {
-    display: block; width: 100%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border: none; padding: 16px;
-    font-size: 16px; font-weight: 700; border-radius: 14px;
-    cursor: pointer; letter-spacing: .05em;
-    transition: transform .2s, box-shadow .2s;
-  }
-  .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,.4); }
+/* notes */
+.note-item{
+  background:rgba(88,166,255,.06);border-left:3px solid var(--acc);
+  border-radius:8px;padding:9px 14px;font-size:12px;color:var(--sub);
+  line-height:1.6;margin-bottom:7px;
+}
+.btn-retry{
+  display:block;width:100%;background:var(--acc);color:#0d1117;border:none;
+  padding:13px;font-size:15px;font-weight:700;border-radius:var(--r);
+  cursor:pointer;letter-spacing:.03em;transition:all .2s;margin-top:20px;font-family:var(--font);
+}
+.btn-retry:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(88,166,255,.35)}
 
-  @media (max-width: 480px) {
-    .q-card { padding: 24px; }
-    .q-text { font-size: 16px; }
-    .bar-name { width: 70px; font-size: 11px; }
-    h1 { font-size: 21px; }
-  }
+/* ── KAISETSU ── */
+.kai-wrap{max-width:980px;margin:0 auto;padding:40px}
+.kai-h{font-size:22px;font-weight:800;margin-bottom:6px}
+.kai-sub{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:36px}
+.sec-div{font-size:16px;font-weight:800;margin:44px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
+
+/* axis cards */
+.axes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:8px}
+.ax-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:18px}
+.ax-card-title{font-size:10px;color:var(--mut);font-weight:700;letter-spacing:.1em;margin-bottom:10px}
+.ax-poles{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pole{flex:1;background:var(--surf);border-radius:8px;padding:9px;text-align:center}
+.pole-ch{font-size:18px;font-weight:800;margin-bottom:3px}
+.pole-lbl{font-size:10px;color:var(--sub);line-height:1.3}
+.pole-sep{color:var(--mut);font-size:16px}
+.ax-card-desc{font-size:11px;color:var(--sub);line-height:1.6}
+
+/* code cards */
+.code-group{margin-bottom:40px}
+.group-head{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;font-weight:700;color:var(--sub);
+  letter-spacing:.06em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bdr);
+}
+.group-dot{width:10px;height:10px;border-radius:50%}
+.codes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.code-card{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:14px;transition:border-color .14s,transform .14s;cursor:default;
+}
+.code-card:hover{transform:translateY(-2px)}
+.cc-badge{
+  display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;
+  border-radius:5px;padding:2px 8px;margin-bottom:7px;
+}
+.cc-alias{font-size:14px;font-weight:700;margin-bottom:6px}
+.cc-desc{font-size:11px;color:var(--sub);line-height:1.55}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .mob-header{display:flex}
+  .sidebar{transform:translateX(-100%);top:50px}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding-top:50px}
+  .quiz-page-wrap,.result-wrap,.kai-wrap,.start-wrap{padding:16px 16px 60px}
+  .q-row{padding:20px 18px}
+  .q-row-text{font-size:15px}
+  .hero-code{gap:3px}
+  .code-box{width:42px;height:58px}
+  .code-char{font-size:20px}
+  .hero-alias{font-size:20px}
+  .start-title{font-size:26px}
+  .th-name{width:90px}
+  .axes-grid{grid-template-columns:1fr}
+  .codes-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .codes-grid{grid-template-columns:1fr}
+  .b7.s1,.b7.s7{width:44px;height:44px}
+  .b7.s2,.b7.s6{width:36px;height:36px}
+  .b7.s3,.b7.s5{width:29px;height:29px}
+  .b7.s4{width:22px;height:22px}
+  .scale7-bubbles{gap:7px}
+}
 </style>
 </head>
 <body>
-<div class="container">
+
+<header class="mob-header" id="mob-hdr">
+  <button class="hamburger" onclick="toggleSB()">☰</button>
+  <span class="mob-title">🧠 UTTI診断</span>
+</header>
+
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <h2>🧠 UTTI診断</h2>
+    <p>あなたの思考の型を読み解く</p>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-item active" id="nav-shindan" onclick="navigate('shindan')">
+      <span class="nav-icon">📋</span><span>診断</span>
+    </div>
+    <div class="nav-item" id="nav-kaisetsu" onclick="navigate('kaisetsu')">
+      <span class="nav-icon">📚</span><span>解説</span>
+    </div>
+  </nav>
+  <div class="sb-foot">5軸 × 15思想 × 32コード</div>
+</aside>
+
+<main class="main">
 
   <!-- START -->
-  <div id="start" class="screen active">
-    <div class="logo">🧠</div>
-    <h1>哲学思想タイプ診断</h1>
-    <p class="subtitle">
-      30の命題にあなたの感覚で答えてください。<br>
-      回答から、あなたの思考に宿る哲学的傾向の分布が明らかになります。
-    </p>
-    <div class="meta-info">
-      <span>📋 30問</span>
-      <span>⏱ 約5分</span>
-      <span>🔍 8思想タイプ</span>
+  <div id="p-start" class="page active">
+    <div class="start-wrap">
+      <div class="start-badge">UTTI DIAGNOSIS</div>
+      <h1 class="start-title">UTTI診断</h1>
+      <p class="start-sub">69の命題に答えることで、あなたの倫理・道徳思考の型を<br>5文字のコードとして可視化します。</p>
+      <div class="start-meta">
+        <div class="meta-chip">📋 69問</div>
+        <div class="meta-chip">⏱ 約10分</div>
+        <div class="meta-chip">🔍 15思想タイプ</div>
+        <div class="meta-chip">🧩 32コード</div>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">診断をはじめる</button>
     </div>
-    <br>
-    <button class="btn-primary" onclick="startQuiz()">診断をはじめる</button>
   </div>
 
   <!-- QUIZ -->
-  <div id="quiz" class="screen">
-    <div class="top-bar">
-      <div class="q-counter" id="q-counter">1 / 30</div>
-      <div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
-    </div>
-    <div class="q-card">
-      <div class="q-label" id="q-label">Q 1</div>
-      <div class="q-text" id="q-text"></div>
-    </div>
-    <div class="choices" id="choices"></div>
-    <div class="quiz-nav">
-      <button class="btn-back" id="btn-back" onclick="goBack()">← 前の質問にもどる</button>
+  <div id="p-quiz" class="page">
+    <div class="quiz-page-wrap">
+      <div class="quiz-page-head">
+        <div class="qp-top">
+          <span class="qp-label">UTTI診断</span>
+          <span class="qp-count" id="q-page-ctr">ページ 1 / 10</span>
+        </div>
+        <div class="prog-track-light"><div class="prog-fill-light" id="prog" style="width:0%"></div></div>
+      </div>
+      <div id="quiz-q-list"></div>
+      <div class="quiz-page-foot">
+        <button class="btn-prev-page" id="btn-prev-page" onclick="prevPage()" disabled>← 前のページへ</button>
+        <button class="btn-next-page" id="btn-next-page" onclick="nextPage()" disabled>次のページへ →</button>
+      </div>
     </div>
   </div>
 
   <!-- RESULT -->
-  <div id="result" class="screen">
-    <div class="result-hero">
-      <div class="result-icon" id="r-icon">🔮</div>
-      <div class="result-tag">あなたの哲学思想タイプ</div>
-      <div class="result-type" id="r-type"></div>
+  <div id="p-result" class="page">
+    <div class="result-wrap">
+      <div class="result-hero" id="r-hero">
+        <div class="hero-code" id="r-code"></div>
+        <div class="hero-alias" id="r-alias"></div>
+        <div class="hero-typelabel" id="r-type"></div>
+      </div>
+      <div id="r-notes"></div>
+      <div class="rs" id="r-desc-sec" style="display:none">
+        <div class="rs-title">■ タイプの説明</div>
+        <p class="rs-desc" id="r-desc-text"></p>
+      </div>
+      <div class="rs">
+        <div class="rs-title">■ 5軸の内訳</div>
+        <div id="r-axes"></div>
+      </div>
+      <div class="rs">
+        <div class="rs-title">■ 思想分布（上位表示）</div>
+        <div id="r-thoughts"></div>
+      </div>
+      <button class="btn-retry" onclick="resetQuiz()">もう一度診断する</button>
     </div>
-
-    <div id="r-notes" class="notes-area"></div>
-
-    <!-- 結果説明（動的生成） -->
-    <div id="r-desc"></div>
-
-    <div style="height:20px"></div>
-
-    <div class="card">
-      <div class="card-title">■ 思想分布チャート</div>
-      <div id="chart"></div>
-    </div>
-
-    <div style="height:8px"></div>
-    <button class="btn-retry" onclick="resetQuiz()">もう一度診断する</button>
   </div>
 
-</div>
+  <!-- KAISETSU -->
+  <div id="p-kaisetsu" class="page">
+    <div class="kai-wrap">
+      <h2 class="kai-h">解説</h2>
+      <p class="kai-sub">この診断は5つの軸で思考スタイルを測定し、15の哲学思想スコアと5軸から32種類のコードを算出します。</p>
+      <div class="sec-div">5つの判断軸</div>
+      <div class="axes-grid" id="k-axes"></div>
+      <div class="sec-div">32コード 一覧</div>
+      <div id="k-codes"></div>
+    </div>
+  </div>
+
+</main>
 
 <script>
-// ===================================================
-// DATA: philosophy_quiz.json を埋め込み
-// ===================================================
+// =====================================================
+// QUIZ DATA
+// =====================================================
 const QUIZ = {
-  "meta": { "version": "1.0" },
-  "thoughts": {
-    "existentialism": "実存主義",
-    "stoicism":       "ストア哲学",
-    "utilitarianism": "功利主義",
-    "deontology":     "義務論",
-    "epicureanism":   "快楽主義",
-    "virtue_ethics":  "徳倫理",
-    "nihilism":       "ニヒリズム",
-    "skepticism":     "懐疑主義"
+  thoughts:{
+    existentialism:"実存主義",stoicism:"ストア哲学",utilitarianism:"功利主義",
+    deontology:"義務論",epicureanism:"快楽主義(エピクロス)",virtue_ethics:"徳倫理",
+    nihilism:"ニヒリズム",pyrrhonism:"懐疑主義(ピュロン)",relativism:"道徳相対主義",
+    egoism:"倫理的利己主義",absurdism:"不条理主義",hard_determinism:"ハード決定論",
+    care_ethics:"ケアの倫理",contractarianism:"契約主義",naturalism:"自然主義/情動主義"
   },
-  "choices": [
-    { "id": 1, "label": "そう思う" },
-    { "id": 2, "label": "どちらかといえばそう思う" },
-    { "id": 3, "label": "どちらかといえばそう思わない" },
-    { "id": 4, "label": "そう思わない" },
-    { "id": 5, "label": "前提が破綻していると思う" }
+  axes:[
+    {id:"META",pos:"R",neg:"A",name:"道徳の実在",pos_label:"道徳実在",neg_label:"反実在(構築物)"},
+    {id:"BASIS",pos:"C",neg:"P",name:"判断の基準",pos_label:"帰結(結果)",neg_label:"原則・人格"},
+    {id:"SOURCE",pos:"U",neg:"E",name:"価値の源泉",pos_label:"普遍・他者",neg_label:"自己還元"},
+    {id:"STANCE",pos:"K",neg:"S",name:"認識の構え",pos_label:"断定",neg_label:"保留"},
+    {id:"WILL",pos:"M",neg:"D",name:"意志と意味",pos_label:"主体・意味",neg_label:"離脱・決定"}
   ],
-  "weight_rule": {
-    "target_forward": { "1": 2, "2": 1, "3": -1, "4": -2, "5": 0 },
-    "target_reverse_multiplier": -1,
-    "cross_strength": { "strong": 1, "med": 0.5 },
-    "cross_rule": ""
+  choices:[
+    {id:1,label:"強くそう思う"},
+    {id:2,label:"そう思う"},
+    {id:3,label:"どちらかといえばそう思う"},
+    {id:4,label:"どちらとも言えない"},
+    {id:5,label:"どちらかといえばそう思わない"},
+    {id:6,label:"そう思わない"},
+    {id:7,label:"強くそう思わない"},
+    {id:8,label:"答えようがない"}
+  ],
+  config:{
+    hybridGap:0.06,confidenceFloor:0.55,axisDeadband:0.12,
+    suspension:{weights:{H:1.0,M:0.6,L:0.3},thetaHigh:0.45,thetaLow:0.20,lazyGuardIndex:0.80}
   },
-  "questions": [
-    { "id": 1,  "text": "自分が何者になるかは、これから自分が選ぶことで決まっていく。",               "target": "existentialism", "direction": "forward", "cross": [{"thought":"nihilism","strength":"med"}],         "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 2,  "text": "より多くの人が得をするなら、多少ルールを破ってでもそうすべきだ。",           "target": "utilitarianism", "direction": "forward", "cross": [{"thought":"deontology","strength":"strong"}],   "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 3,  "text": "自分ではどうにもならない出来事にも、感情を込めて反応するほうが人間らしい。", "target": "stoicism",       "direction": "reverse", "cross": [{"thought":"epicureanism","strength":"med"}],     "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 4,  "text": "結果がどうであれ、やってはいけないことは絶対にやってはいけない。",           "target": "deontology",     "direction": "forward", "cross": [{"thought":"utilitarianism","strength":"strong"}], "choice5": {"thought":"nihilism","pts":1} },
-    { "id": 5,  "text": "快や苦を基準に物事を決めるのは、人として浅い。",                           "target": "epicureanism",   "direction": "reverse", "cross": [{"thought":"stoicism","strength":"med"}],         "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 6,  "text": "何が正しい行動かを考えるより、自分がどんな人間であるかのほうが大事だ。",   "target": "virtue_ethics",  "direction": "forward", "cross": [{"thought":"deontology","strength":"med"}],       "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 7,  "text": "世界にもともと意味や目的なんてものは無い。",                               "target": "nihilism",       "direction": "forward", "cross": [{"thought":"existentialism","strength":"med"}],   "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 8,  "text": "思い通りにならないことで悩むのは無駄で、変えられることだけを考えればいい。","target": "stoicism",       "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 9,  "text": "ルールは絶対ではなく、状況次第で破っても構わない。",                       "target": "deontology",     "direction": "reverse", "cross": [{"thought":"utilitarianism","strength":"strong"}], "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 10, "text": "何が本当に正しいかは、結局のところ誰にも分からない。",                     "target": "skepticism",     "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 11, "text": "たとえ全体の利益が増えても、犠牲になる人を出してはいけない。",               "target": "utilitarianism", "direction": "reverse", "cross": [{"thought":"deontology","strength":"strong"}],   "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 12, "text": "派手な刺激や成功よりも、心がざわつかない静かな満足のほうが価値がある。",   "target": "epicureanism",   "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 13, "text": "人格よりも、決められたことをきちんと守れるかどうかが大事だ。",             "target": "virtue_ethics",  "direction": "reverse", "cross": [{"thought":"deontology","strength":"med"}],       "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 14, "text": "人にはもともと決まった役割や本分があり、それに沿って生きるのが自然だ。",   "target": "existentialism", "direction": "reverse", "cross": [{"thought":"nihilism","strength":"med"}],         "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 15, "text": "他人の評価や運に左右される幸福は、本物の幸福とは言えない。",               "target": "stoicism",       "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 16, "text": "世界には、人が見つけ出すべき確かな意味がある。",                           "target": "nihilism",       "direction": "reverse", "cross": [{"thought":"existentialism","strength":"med"}],   "choice5": {"thought":"nihilism","pts":1} },
-    { "id": 17, "text": "誰がやっても通用するルールに従っているかが、正しさの基準だ。",             "target": "deontology",     "direction": "forward", "cross": [{"thought":"utilitarianism","strength":"strong"}], "choice5": {"thought":"nihilism","pts":1} },
-    { "id": 18, "text": "一人が深く傷ついても、全体の幸福が大きく増えるなら受け入れられる。",       "target": "utilitarianism", "direction": "forward", "cross": [{"thought":"deontology","strength":"strong"}],   "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 19, "text": "多少つらくても、大きな目標のためなら満足を我慢すべきだ。",                 "target": "epicureanism",   "direction": "reverse", "cross": [{"thought":"stoicism","strength":"med"}],         "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 20, "text": "極端を避けて、ほどよい中間を選べる人が賢い。",                           "target": "virtue_ethics",  "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 21, "text": "しっかり考えれば、確かな答えにはたどり着ける。",                         "target": "skepticism",     "direction": "reverse", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 22, "text": "人生にあらかじめ決まった意味はなく、自分で意味を与えるしかない。",         "target": "existentialism", "direction": "forward", "cross": [{"thought":"nihilism","strength":"med"}],         "choice5": {"thought":"nihilism","pts":1} },
-    { "id": 23, "text": "心の平穏は、外の状況が良くならない限り手に入らない。",                   "target": "stoicism",       "direction": "reverse", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 24, "text": "その場をうまく収められるなら、嘘をついても問題ない。",                   "target": "deontology",     "direction": "reverse", "cross": [{"thought":"utilitarianism","strength":"strong"}], "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 25, "text": "余計な欲を手放し、必要な分だけ満たせていれば十分だ。",                   "target": "epicureanism",   "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 26, "text": "幸福を数や合計で測るという考え方そのものがおかしい。",                   "target": "utilitarianism", "direction": "reverse", "cross": [{"thought":"deontology","strength":"strong"}],   "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 27, "text": "立派な人間かどうかは、生き方の良し悪しとは関係ない。",                   "target": "virtue_ethics",  "direction": "reverse", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 28, "text": "絶対に正しい道徳など、どこにも存在しない。",                             "target": "nihilism",       "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 29, "text": "確実な答えの出ない問題では、判断を保留するのが誠実だ。",                 "target": "skepticism",     "direction": "forward", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} },
-    { "id": 30, "text": "自分の生き方は、生まれや環境でほとんど決まってしまう。",                 "target": "existentialism", "direction": "reverse", "cross": [],                                               "choice5": {"thought":"skepticism","pts":1} }
-  ],
-  "config": {
-    "skepticPromoteCount": 8,
-    "hybridGap": 0.08,
-    "confidenceFloor": 0.55
-  }
+  codeProfiles:{
+    "RCUKM":{alias:"公益の建築家",desc:"道徳は実在すると信じ、最も多くの人の利益という結果を物差しに、迷わず決めて動く。全体最適を設計できる実務家だが、合計のために少数を切り捨てる冷たさに注意。"},
+    "RCUKD":{alias:"鉄面の執政官",desc:"公益を結果で測り即断する点は建築家と同じだが、人も自分も因果の産物と見て情を交えない。効率は高いが、相手には機械的に映りやすい。"},
+    "RCUSM":{alias:"漸進の改良家",desc:"皆のための良い結果を目指して関与しつつ、自分の判断を絶対とはせず修正を前提に進める。独断を避ける柔軟さが強みで、決断の遅さが弱み。"},
+    "RCUSD":{alias:"静観の実務家",desc:"公益と結果を重んじるが、断定を控え距離を取って眺める。バランス感覚に優れる反面、当事者として踏み込む熱量に欠ける。"},
+    "RCEKM":{alias:"野心の戦略家",desc:"善悪は実在すると見つつ、最終的に勘定するのは自分の得。明確な目標へ迷わず突き進む推進力があるが、他者を手段化しやすい。"},
+    "RCEKD":{alias:"打算の指揮官",desc:"自分の利益を結果で計算し即断するが、人間を駒のように冷静に扱う。成果は出すが、信頼の蓄積を軽んじる傾向。"},
+    "RCESM":{alias:"試行の冒険者",desc:"自分にとっての結果を試しながら関与し、決めつけずに動く。身軽で実験的だが、一貫した軸が見えにくい。"},
+    "RCESD":{alias:"達観の享楽家",desc:"自分の満足を結果で測りつつ、執着せず一歩引いて味わう。穏やかだが、深く関与する動機が薄い。"},
+    "RPUKM":{alias:"原則の擁護者",desc:"守るべき一線は実在すると信じ、結果によらずそれを掲げて行動する。誠実でぶれないが、原則を状況に優先させ融通を欠くことがある。"},
+    "RPUKD":{alias:"義務の番人",desc:"普遍の義務を断固守るが、人も運命も決まっていると見て情に流されない。規律の人だが硬直しやすい。"},
+    "RPUSM":{alias:"誠実な探求者",desc:"他者のための原則を大切にしつつ、自分が完全に正しいとは構えず問い続ける。謙虚で信頼されるが、行動が慎重すぎることも。"},
+    "RPUSD":{alias:"静かな良心",desc:"原則と他者を重んじるが、声高に主張せず距離を保つ。控えめな誠実さが持ち味で、影響力の発揮には消極的。"},
+    "RPEKM":{alias:"我が道の求道者",desc:"確固たる原則を持つが、それは与えられたものではなく自分が選んだもの。信念に従って動く強さがある一方、独善に陥りやすい。"},
+    "RPEKD":{alias:"孤高の戒律者",desc:"自分で定めた規律を断固守るが、世間とは距離を置く。ぶれない芯を持つが、孤立しがち。"},
+    "RPESM":{alias:"内なる規範者",desc:"自分の中の規範に従いつつ、決めつけずに関与する。芯と柔軟さを併せ持つが、規範の根拠を他者へ説明しにくい。"},
+    "RPESD":{alias:"黙する修行者",desc:"自分の原則を静かに守り、語らず距離を取る。求道的だが、内向きに閉じやすい。"},
+    "ACUKM":{alias:"現実派の調整者",desc:"道徳は人が作った約束事と割り切りつつ、皆が得する結果を目指して断固動く。実利的なまとめ役だが、理想や一線を軽んじることがある。"},
+    "ACUKD":{alias:"制度の技師",desc:"道徳を互恵の仕組みと見て、結果重視で淡々と設計する。合理的だが、人を制度の部品として扱いがち。"},
+    "ACUSM":{alias:"柔軟な仲裁者",desc:"絶対の善悪を置かず、皆の利益を見ながら決めつけずに橋を架ける。対立をほぐす力があるが、軸の弱さと見られることも。"},
+    "ACUSD":{alias:"醒めた世話役",desc:"道徳を構築物と捉え、他者の益を結果で測りつつ距離を保つ。冷静に支えるが、踏み込んだ情には乏しい。"},
+    "ACEKM":{alias:"自由の策士",desc:"絶対の道徳に縛られず、自分の利益と満足を基準に迷わず動く。建前に流されない強さがあるが、協力関係を損ないやすい。"},
+    "ACEKD":{alias:"冷徹な実利家",desc:"善悪を勘定に還元し、自分の得を即断で取りにいく。ドライで有能だが、信頼や情を計算外にしがち。"},
+    "ACESM":{alias:"気ままな享楽者",desc:"自分の満足を軸に、決めつけず身軽に楽しむ。自由で柔軟だが、責任や継続を避ける傾向。"},
+    "ACESD":{alias:"醒めた個人主義者",desc:"絶対の善悪も確かな真理も置かず、自分という一点に還元して距離を取って生きる。揺らがない自立があるが、何にも深く関与しない閉じ方になりやすい。"},
+    "APUKM":{alias:"信条の実践者",desc:"道徳は人が作るものと知りつつ、皆で共有する原則に賭けて行動する。理想を構築物と承知で掲げる胆力があるが、根拠を問われると揺れる。"},
+    "APUKD":{alias:"規範の管理人",desc:"共同体の取り決めを断固運用するが、それが絶対だとは思っていない。秩序を保つが、内心の冷めが見える。"},
+    "APUSM":{alias:"寛容な調停者",desc:"通文化の絶対基準を置かず、他者を裁かずに関与する。多様性を受け入れる柔らかさが強みで、不正に一線を引きにくい。"},
+    "APUSD":{alias:"傍観する人類学者",desc:"道徳を文化や感情の産物として観察し、距離を取って眺める。冷静で公平だが、自ら価値を立てて動くことは少ない。"},
+    "APEKM":{alias:"自己流の主",desc:"絶対の道徳を認めず、自分で引いた線に従って迷わず動く。完全な自律があるが、他者と基準を共有しにくい。"},
+    "APEKD":{alias:"我流の隠者",desc:"自分の流儀を断固持つが、世界とは距離を置き群れない。独立しているが、孤立と紙一重。"},
+    "APESM":{alias:"内省する自由人",desc:"外の基準に縛られず、決めつけずに自分を問い続けながら関与する。しなやかな自由があるが、立場を定めない曖昧さも。"},
+    "APESD":{alias:"達観した一匹狼",desc:"絶対の善悪も真理も置かず、自分一点に還元し、判断を保留して距離を取る。何にも揺らがされない強さがあるが、誰とも深く交わらない孤独を抱えやすい。"}
+  },
+  questions:[
+    {id:1,text:"自分が何者になるかは、生まれや本性ではなく、これから自分が選ぶことで決まる。",c5weight:"L",weights:{existentialism:2.0,hard_determinism:-1.0,nihilism:-0.5,SOURCE:-1.0,WILL:1.0}},
+    {id:2,text:"人生にあらかじめ用意された意味はなく、自分で意味を与えるしかない。",c5weight:"L",weights:{existentialism:2.0,nihilism:-0.5,SOURCE:-1.0,WILL:1.0}},
+    {id:3,text:"人にはもともと決まった本分や役割があり、それに従って生きるのが自然だ。",c5weight:"L",weights:{existentialism:-2.0,SOURCE:1.0,WILL:-1.0}},
+    {id:4,text:"自分の生き方は、生まれや環境でほとんど決まってしまう。",c5weight:"L",weights:{existentialism:-2.0,hard_determinism:1.0,SOURCE:1.0,WILL:-1.0}},
+    {id:5,text:"選んだ結果がどうなろうと、選んだのは自分だという責任からは逃れられない。",c5weight:"L",weights:{existentialism:2.0,hard_determinism:-0.5,SOURCE:-1.0,WILL:1.0}},
+    {id:6,text:"思い通りにならないことで悩むのは無駄で、変えられることだけ考えればいい。",c5weight:"L",weights:{stoicism:2.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:-1.0}},
+    {id:7,text:"他人の評価や運に左右される幸福は、本物の幸福とは言えない。",c5weight:"L",weights:{stoicism:2.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:-1.0}},
+    {id:8,text:"心の平穏は、外の状況が良くならない限り手に入らない。",c5weight:"L",weights:{stoicism:-2.0,BASIS:1.0,SOURCE:-1.0,STANCE:-1.0,WILL:1.0}},
+    {id:9,text:"感情に流される前に、理性でいったん受け止め方を選び直すべきだ。",c5weight:"L",weights:{stoicism:2.0,naturalism:-0.5,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:-1.0}},
+    {id:10,text:"つらい時は感情を抑えず、しっかり感じ切るほうが健全だ。",c5weight:"L",weights:{stoicism:-2.0,BASIS:1.0,SOURCE:-1.0,STANCE:-1.0,WILL:1.0}},
+    {id:11,text:"より多くの人が得をするなら、多少ルールを破ってでもそうすべきだ。",c5weight:"M",weights:{utilitarianism:2.0,deontology:-1.0,META:1.0,BASIS:1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:12,text:"一人が深く傷ついても、全体の幸福が大きく増えるなら受け入れられる。",c5weight:"M",weights:{utilitarianism:2.0,deontology:-1.0,care_ethics:-0.5,META:1.0,BASIS:1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:13,text:"たとえ全体の利益が増えても、犠牲になる人を出してはいけない。",c5weight:"M",weights:{utilitarianism:-2.0,deontology:1.0,META:-1.0,BASIS:-1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:14,text:"幸福を数や合計で測るという考え方そのものがおかしい。",c5weight:"M",weights:{utilitarianism:-2.0,META:-1.0,BASIS:-1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:15,text:"正しさは、その行動が世界にもたらす結果の総量で決まる。",c5weight:"M",weights:{utilitarianism:2.0,deontology:-1.0,META:1.0,BASIS:1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:16,text:"結果がどうであれ、やってはいけないことは絶対にやってはいけない。",c5weight:"M",weights:{deontology:2.0,utilitarianism:-1.0,META:1.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:17,text:"誰がやっても通用する普遍的なルールに従っているかが、正しさの基準だ。",c5weight:"H",weights:{deontology:2.0,utilitarianism:-1.0,relativism:-1.0,META:1.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:18,text:"ルールは絶対ではなく、状況次第で破ってもよい。",c5weight:"M",weights:{deontology:-2.0,utilitarianism:0.5,META:-1.0,BASIS:1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:19,text:"その場をうまく収められるなら、嘘をついても問題ない。",c5weight:"M",weights:{deontology:-2.0,utilitarianism:0.5,META:-1.0,BASIS:1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:20,text:"たとえ自分や周りが損をしても、義務だと思うことは果たすべきだ。",c5weight:"M",weights:{deontology:2.0,egoism:-1.0,META:1.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:21,text:"派手な刺激や成功よりも、心がざわつかない静かな満足のほうが価値がある。",c5weight:"L",weights:{epicureanism:2.0,BASIS:1.0,SOURCE:-1.0,WILL:-1.0}},
+    {id:22,text:"余計な欲を手放し、必要な分だけ満たせていれば十分だ。",c5weight:"L",weights:{epicureanism:2.0,BASIS:1.0,SOURCE:-1.0,WILL:-1.0}},
+    {id:23,text:"多少つらくても、大きな目標のためなら満足を我慢すべきだ。",c5weight:"L",weights:{epicureanism:-2.0,BASIS:-1.0,SOURCE:1.0,WILL:1.0}},
+    {id:24,text:"死んでしまえば感覚もないのだから、死を恐れる必要はない。",c5weight:"L",weights:{epicureanism:2.0,BASIS:1.0,SOURCE:-1.0,WILL:-1.0}},
+    {id:25,text:"強い快や興奮をどんどん追い求めることこそ、生きる醍醐味だ。",c5weight:"L",weights:{epicureanism:-2.0,BASIS:-1.0,SOURCE:1.0,WILL:1.0}},
+    {id:26,text:"何が正しい行動かを考えるより、自分がどんな人間であるかのほうが大事だ。",c5weight:"L",weights:{virtue_ethics:2.0,deontology:-0.5,META:1.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:27,text:"極端を避けて、ほどよい中間を選べる人が賢い。",c5weight:"L",weights:{virtue_ethics:2.0,META:1.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:28,text:"立派な人間かどうかは、生き方の良し悪しとは関係ない。",c5weight:"L",weights:{virtue_ethics:-2.0,META:-1.0,BASIS:1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:29,text:"人格よりも、決められたことをきちんと守れるかどうかが大事だ。",c5weight:"L",weights:{virtue_ethics:-2.0,deontology:0.5,META:-1.0,BASIS:1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:30,text:"良い行いは、ルールだからではなく、そういう人柄から自然に出るものだ。",c5weight:"L",weights:{virtue_ethics:2.0,deontology:-0.5,META:1.0,BASIS:-1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:31,text:"世界にもともと意味や目的なんてものは無い。",c5weight:"H",weights:{nihilism:2.0,existentialism:-0.5,absurdism:-0.5,META:-1.0,WILL:-1.0}},
+    {id:32,text:"絶対に正しい道徳など、どこにも存在しない。",c5weight:"H",weights:{nihilism:2.0,relativism:-0.5,naturalism:-0.5,META:-1.0,WILL:-1.0}},
+    {id:33,text:"世界には、人が見つけ出すべき確かな意味がある。",c5weight:"H",weights:{nihilism:-2.0,META:1.0,WILL:1.0}},
+    {id:34,text:"意味が無い以上、何かに必死で取り組むこと自体がばかばかしい。",c5weight:"H",weights:{nihilism:2.0,absurdism:-1.0,META:-1.0,WILL:-1.0}},
+    {id:35,text:"意味が無くても、それでも自分なりに打ち込む価値はある。",c5weight:"H",weights:{nihilism:-2.0,absurdism:1.0,META:1.0,WILL:1.0}},
+    {id:36,text:"何が本当に正しいかは、結局のところ誰にも分からない。",c5weight:"H",weights:{pyrrhonism:2.0,STANCE:-1.0,WILL:-1.0}},
+    {id:37,text:"確実な答えの出ない問題では、判断を保留するのが誠実だ。",c5weight:"H",weights:{pyrrhonism:2.0,STANCE:-1.0,WILL:-1.0}},
+    {id:38,text:"しっかり考えれば、確かな答えにはたどり着ける。",c5weight:"H",weights:{pyrrhonism:-2.0,STANCE:1.0,WILL:1.0}},
+    {id:39,text:"どちらとも決めつけず宙ぶらりんでいるほうが、かえって心が乱れない。",c5weight:"H",weights:{pyrrhonism:2.0,stoicism:-0.5,STANCE:-1.0,WILL:-1.0}},
+    {id:40,text:"真理など存在しないと、はっきり言い切れる。",c5weight:"H",weights:{pyrrhonism:-2.0,nihilism:1.0,STANCE:1.0,WILL:1.0}},
+    {id:41,text:"何が正しいかは文化や社会によって違い、どこでも通じる基準は無い。",c5weight:"H",weights:{relativism:2.0,deontology:-1.0,naturalism:-0.5,META:-1.0}},
+    {id:42,text:"ある社会の道徳を、別の社会の物差しで裁くことはできない。",c5weight:"H",weights:{relativism:2.0,META:-1.0}},
+    {id:43,text:"文化が違っても、超えてはいけない共通の一線はある。",c5weight:"H",weights:{relativism:-2.0,deontology:0.5,META:1.0}},
+    {id:44,text:"正しさはその場の集団が決めることで、自分一人の物差しでは測れない。",c5weight:"H",weights:{relativism:2.0,egoism:-1.0,META:-1.0}},
+    {id:45,text:"結局、何をすべきかは自分の利益や満足を基準に決めればいい。",c5weight:"M",weights:{egoism:2.0,care_ethics:-1.0,utilitarianism:-1.0,META:-1.0,BASIS:1.0,SOURCE:-1.0}},
+    {id:46,text:"他人や社会のためという建前より、自分にとってどうかが本音の基準だ。",c5weight:"M",weights:{egoism:2.0,contractarianism:-0.5,META:-1.0,BASIS:1.0,SOURCE:-1.0}},
+    {id:47,text:"自分が損をしても、他人のために尽くすことに意味がある。",c5weight:"M",weights:{egoism:-2.0,care_ethics:1.0,META:1.0,BASIS:-1.0,SOURCE:1.0}},
+    {id:48,text:"正しさは集団が決めるものではなく、自分にとってどうかでしかない。",c5weight:"M",weights:{egoism:2.0,relativism:-1.0,META:-1.0,BASIS:1.0,SOURCE:-1.0}},
+    {id:49,text:"世界に意味は無いと分かっていても、それでも生を楽しみ前へ進むべきだ。",c5weight:"L",weights:{absurdism:2.0,nihilism:-1.0,SOURCE:-1.0,WILL:1.0}},
+    {id:50,text:"答えの出ない人生に、投げ出さず立ち向かう姿勢にこそ価値がある。",c5weight:"L",weights:{absurdism:2.0,nihilism:-0.5,SOURCE:-1.0,WILL:1.0}},
+    {id:51,text:"意味が無いと気づいたら、もう頑張る理由は無い。",c5weight:"L",weights:{absurdism:-2.0,nihilism:1.0,SOURCE:1.0,WILL:-1.0}},
+    {id:52,text:"不条理な世界に絶望せず、むしろ笑い飛ばして生きたい。",c5weight:"L",weights:{absurdism:2.0,SOURCE:-1.0,WILL:1.0}},
+    {id:53,text:"人の選択は、突き詰めれば過去の原因の積み重ねで決まっている。",c5weight:"L",weights:{hard_determinism:2.0,existentialism:-1.0,WILL:-1.0}},
+    {id:54,text:"自由意志は錯覚で、本当の意味で「選べた」ことは無い。",c5weight:"L",weights:{hard_determinism:2.0,existentialism:-1.0,WILL:-1.0}},
+    {id:55,text:"人は本当の意味で、自分の意志で行動を選べる。",c5weight:"L",weights:{hard_determinism:-2.0,existentialism:1.0,WILL:1.0}},
+    {id:56,text:"同じ遺伝子と環境であれば、同じ人間が同じ選択をするだけだ。",c5weight:"L",weights:{hard_determinism:2.0,WILL:-1.0}},
+    {id:57,text:"努力や決意しだいで、運命は自分で変えられる。",c5weight:"L",weights:{hard_determinism:-2.0,existentialism:0.5,WILL:1.0}},
+    {id:58,text:"正しさは抽象的なルールより、目の前の人との関係や事情から考えるべきだ。",c5weight:"M",weights:{care_ethics:2.0,deontology:-1.0,utilitarianism:-0.5,META:1.0,BASIS:-1.0,SOURCE:1.0,WILL:1.0}},
+    {id:59,text:"困っている身近な人を助けることは、公平さの計算より優先していい。",c5weight:"M",weights:{care_ethics:2.0,utilitarianism:-1.0,META:1.0,BASIS:-1.0,SOURCE:1.0,WILL:1.0}},
+    {id:60,text:"個別の事情に流されず、誰にでも同じ原則を当てはめるべきだ。",c5weight:"M",weights:{care_ethics:-2.0,deontology:1.0,META:-1.0,BASIS:1.0,SOURCE:-1.0,WILL:-1.0}},
+    {id:61,text:"人を支え気にかける責任は、損得や合意を超えてある。",c5weight:"M",weights:{care_ethics:2.0,contractarianism:-1.0,egoism:-0.5,META:1.0,BASIS:-1.0,SOURCE:1.0,WILL:1.0}},
+    {id:62,text:"道徳のルールは、みんなが得をするよう互いに結んだ約束のようなものだ。",c5weight:"M",weights:{contractarianism:2.0,deontology:-0.5,BASIS:1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:63,text:"守る理由のあるルールとは、参加者全員にとって割に合うルールだ。",c5weight:"M",weights:{contractarianism:2.0,care_ethics:-0.5,BASIS:1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:64,text:"道徳は人々の合意とは関係なく、もとから決まっている。",c5weight:"M",weights:{contractarianism:-2.0,deontology:0.5,BASIS:-1.0,SOURCE:-1.0,STANCE:-1.0,WILL:-1.0}},
+    {id:65,text:"社会の決まりは、誰かの命令ではなく、互いの同意によって正当化される。",c5weight:"M",weights:{contractarianism:2.0,BASIS:1.0,SOURCE:1.0,STANCE:1.0,WILL:1.0}},
+    {id:66,text:"善悪の判断は、突き詰めれば理屈ではなく感情の表れだ。",c5weight:"H",weights:{naturalism:2.0,deontology:-0.5,META:-1.0,STANCE:-1.0}},
+    {id:67,text:"理性は判断の主役ではなく、感情と並ぶ一つの要素にすぎない。",c5weight:"H",weights:{naturalism:2.0,stoicism:-1.0,META:-1.0,STANCE:-1.0}},
+    {id:68,text:"道徳的な正しさは、感情とは独立した理屈で決まる。",c5weight:"H",weights:{naturalism:-2.0,deontology:0.5,META:1.0,STANCE:1.0}},
+    {id:69,text:"「これは悪い」と言うのは、事実の報告ではなく嫌悪の表明に近い。",c5weight:"H",weights:{naturalism:2.0,META:-1.0,STANCE:-1.0}}
+  ]
 };
 
-// ===================================================
-// SCORING (scoring.js をそのまま移植)
-// ===================================================
-function expandChoiceWeights(question, choiceId, rule) {
-  const w = {};
-  const add = (k, v) => { w[k] = (w[k] || 0) + v; };
-  if (choiceId === 5) {
-    if (question.choice5) add(question.choice5.thought, question.choice5.pts);
-    return w;
-  }
-  let tv = rule.target_forward[String(choiceId)];
-  if (question.direction === "reverse") tv *= rule.target_reverse_multiplier;
-  add(question.target, tv);
-  if (tv === 2 || tv === -2) {
-    for (const c of (question.cross || [])) {
-      const k = rule.cross_strength[c.strength];
-      add(c.thought, tv === 2 ? -k : k);
+// =====================================================
+// THOUGHT META
+// =====================================================
+const TM = {
+  existentialism:{color:"#a78bfa"},stoicism:{color:"#60a5fa"},
+  utilitarianism:{color:"#34d399"},deontology:{color:"#f59e0b"},
+  epicureanism:{color:"#fb923c"},virtue_ethics:{color:"#f472b6"},
+  nihilism:{color:"#f87171"},pyrrhonism:{color:"#94a3b8"},
+  relativism:{color:"#c084fc"},egoism:{color:"#fbbf24"},
+  absurdism:{color:"#818cf8"},hard_determinism:{color:"#6b7280"},
+  care_ethics:{color:"#f9a8d4"},contractarianism:{color:"#4ade80"},
+  naturalism:{color:"#38bdf8"}
+};
+
+// =====================================================
+// CODE GROUP COLORS
+// =====================================================
+const CG = {
+  RC:{color:"#3b82f6",bg:"rgba(59,130,246,.15)",glow:"rgba(59,130,246,.2)",label:"道徳実在 × 帰結重視"},
+  RP:{color:"#8b5cf6",bg:"rgba(139,92,246,.15)",glow:"rgba(139,92,246,.2)",label:"道徳実在 × 原則重視"},
+  AC:{color:"#14b8a6",bg:"rgba(20,184,166,.15)",glow:"rgba(20,184,166,.2)",label:"反実在 × 帰結重視"},
+  AP:{color:"#22c55e",bg:"rgba(34,197,94,.15)",glow:"rgba(34,197,94,.2)",label:"反実在 × 原則重視"}
+};
+function cg(code){return CG[code.slice(0,2).toUpperCase()]||CG.RC}
+
+// =====================================================
+// AXIS DESCRIPTIONS (kaisetsu)
+// =====================================================
+const AXDESC = {
+  META:"善や悪は客観的に「ある」のか、人が作り出す「構築物」なのか。",
+  BASIS:"行動の正しさを測る物差しは「結果（誰が何を得るか）」なのか「原則・人格（どういう動機か）」なのか。",
+  SOURCE:"価値や規範の基準は「自分の外（社会・他者・普遍）」にあるのか、「自分自身（内面・利害）」に還元されるのか。",
+  STANCE:"十分に考えれば道徳的真理に到達できると信じるか、確実な答えは出ないとして判断を保留するか。",
+  WILL:"自分の選択や意味づけに主体的に関与するか、意志や意味の存在そのものから離脱・距離を置くか。"
+};
+
+// =====================================================
+// SCORING (from scoring.js v3)
+// =====================================================
+const AM = {1:1.0,2:0.75,3:0.5,4:0.0,5:-0.5,6:-0.75,7:-1.0};
+
+function expandW(q,cid){
+  if(cid===8)return{};
+  const m=AM[cid];
+  if(m==null)return{};
+  const out={};
+  for(const[k,v]of Object.entries(q.weights))out[k]=v*m;
+  return out;
+}
+
+function bounds(quiz,keys){
+  const mn={},mx={};
+  for(const k of keys){mn[k]=0;mx[k]=0;}
+  for(const q of quiz.questions){
+    const per=[1,2,3,4,5,6,7].map(c=>expandW(q,c));
+    for(const k of keys){
+      const vs=per.map(w=>w[k]||0);
+      mx[k]+=Math.max(0,...vs);
+      mn[k]+=Math.min(0,...vs);
     }
   }
-  return w;
+  return{mn,mx};
 }
 
-function computeBounds(quiz) {
-  const keys = Object.keys(quiz.thoughts);
-  const min = {}, max = {};
-  for (const k of keys) { min[k] = 0; max[k] = 0; }
-  for (const q of quiz.questions) {
-    const perChoice = [1, 2, 3, 4, 5].map(cid => expandChoiceWeights(q, cid, quiz.weight_rule));
-    for (const k of keys) {
-      const vals = perChoice.map(w => w[k] || 0);
-      max[k] += Math.max(...vals);
-      min[k] += Math.min(...vals);
-    }
+function scoreQuiz(quiz,answers){
+  const tkeys=Object.keys(quiz.thoughts);
+  const akeys=quiz.axes.map(a=>a.id);
+  const raw={};
+  for(const k of[...tkeys,...akeys])raw[k]=0;
+  const cw=quiz.config.suspension.weights;
+  let c5s=0,c5mx=0,c5n=0;
+  for(const q of quiz.questions){
+    const w=cw[q.c5weight]||0; c5mx+=w;
+    const cid=answers[q.id];
+    if(cid==null)continue;
+    if(cid===8){c5s+=w;c5n++;}
+    const wts=expandW(q,cid);
+    for(const[k,v]of Object.entries(wts))raw[k]+=v;
   }
-  return { min, max };
+  const tb=bounds(quiz,tkeys);
+  const tn={};
+  for(const k of tkeys){const sp=tb.mx[k]-tb.mn[k];tn[k]=sp>0?(raw[k]-tb.mn[k])/sp:0.5;}
+  const ab=bounds(quiz,akeys);
+  const an={};
+  for(const k of akeys){const sp=ab.mx[k]-ab.mn[k];an[k]=sp>0?((raw[k]-ab.mn[k])/sp)*2-1:0;}
+  const si=c5mx>0?c5s/c5mx:0;
+  return{raw,tn,an,si,c5n};
 }
 
-function score(quiz, answers) {
-  const keys = Object.keys(quiz.thoughts);
-  const raw = {};
-  for (const k of keys) raw[k] = 0;
-  let skepticCount = 0;
-  for (const q of quiz.questions) {
-    const cid = answers[q.id];
-    if (cid == null) continue;
-    if (cid === 5) skepticCount++;
-    const w = expandChoiceWeights(q, cid, quiz.weight_rule);
-    for (const [k, v] of Object.entries(w)) raw[k] += v;
+function buildCode(quiz,an,forceS){
+  const dead=quiz.config.axisDeadband;
+  const letters=[],detail=[];
+  for(const ax of quiz.axes){
+    let v=an[ax.id];
+    if(ax.id==="STANCE"&&forceS)v=Math.min(v,-dead-0.01);
+    const pos=v>=0;
+    let ch=pos?ax.pos:ax.neg;
+    const weak=Math.abs(v)<dead;
+    if(weak)ch=ch.toLowerCase();
+    letters.push(ch);
+    detail.push({axis:ax.id,name:ax.name,letter:ch,weak,
+      side:pos?ax.pos_label:ax.neg_label,value:Number(v.toFixed(3))});
   }
-  const { min, max } = computeBounds(quiz);
-  const norm = {};
-  for (const k of keys) {
-    const span = max[k] - min[k];
-    norm[k] = span > 0 ? (raw[k] - min[k]) / span : 0.5;
-  }
-  return { raw, norm, skepticCount };
+  return{code:letters.join(""),detail};
 }
 
-function decideResult(quiz, scored) {
-  const { norm, skepticCount } = scored;
-  const cfg = quiz.config;
-  const L = quiz.thoughts;
-  const ranked = Object.keys(norm)
-    .map(k => ({ key: k, label: L[k], norm: norm[k] }))
-    .sort((a, b) => b.norm - a.norm);
-  const top = ranked[0];
-  const second = ranked[1];
-  const flags = [];
-  const forceSkeptic = skepticCount >= cfg.skepticPromoteCount;
-  const isHybrid = (top.norm - second.norm) <= cfg.hybridGap;
-  const lowConfidence = top.norm < cfg.confidenceFloor;
-  let typeKeys;
-  if (isHybrid) typeKeys = [top.key, second.key];
-  else typeKeys = [top.key];
-  if (forceSkeptic && !typeKeys.includes("skepticism")) {
-    typeKeys.push("skepticism");
-    flags.push("skeptic_promoted");
-  }
-  if (isHybrid) flags.push("hybrid");
-  if (lowConfidence) flags.push("low_confidence");
-  const typeLabel = typeKeys.map(k => L[k]).join("×") + "型";
-  const displayType = lowConfidence ? "型がはっきりしない（傾向のみ表示）" : typeLabel;
-  const notes = [];
-  if (flags.includes("hybrid"))
-    notes.push("上位2思想が僅差のため、ハイブリッド型として表示しています。");
-  if (flags.includes("skeptic_promoted"))
-    notes.push("「前提が破綻している」という回答が多く、懐疑主義の傾向を結果に加えました。");
-  if (flags.includes("low_confidence"))
-    notes.push("最も近い思想でも一致度が低く、特定の型に収まりきらない回答でした。");
-  return { typeKeys, typeLabel, displayType, ranked, skepticCount, flags, notes };
+function decideResult(quiz,scored){
+  const{tn,an,si}=scored;
+  const cfg=quiz.config,sus=cfg.suspension,L=quiz.thoughts;
+  const ranked=Object.keys(tn).map(k=>({key:k,label:L[k],norm:tn[k]})).sort((a,b)=>b.norm-a.norm);
+  const top=ranked[0],second=ranked[1];
+  const flags=[];
+  const isH=(top.norm-second.norm)<=cfg.hybridGap;
+  const lowC=top.norm<cfg.confidenceFloor;
+  const pyN=tn["pyrrhonism"]||0;
+  const lazy=si>sus.lazyGuardIndex&&pyN<cfg.confidenceFloor;
+  let promS=false;
+  if(si>=sus.thetaHigh&&!lazy)promS=true;
+  else if(si>=sus.thetaLow)flags.push("suspension_tendency");
+  if(lazy)flags.push("low_engagement");
+  let typeKeys=isH?[top.key,second.key]:[top.key];
+  if(promS&&!typeKeys.includes("pyrrhonism")){typeKeys.push("pyrrhonism");flags.push("skeptic_promoted");}
+  if(isH)flags.push("hybrid");
+  if(lowC)flags.push("low_confidence");
+  const typeLabel=typeKeys.map(k=>L[k]).join("×")+"型";
+  const displayType=lowC?"型がはっきりしない（傾向のみ表示）":typeLabel;
+  const{code,detail}=buildCode(quiz,an,promS);
+  const profile=(quiz.codeProfiles&&quiz.codeProfiles[code.toUpperCase()])||null;
+  const notes=[];
+  if(flags.includes("hybrid"))notes.push("上位2思想が僅差のためハイブリッド型として表示しています。");
+  if(flags.includes("skeptic_promoted"))notes.push("「決められない／答えようがない」の回答が多く、懐疑主義の傾向を加えました。");
+  if(flags.includes("suspension_tendency"))notes.push("判断を保留する傾向がやや見られます。");
+  if(flags.includes("low_engagement"))notes.push("保留回答が極端に多く、診断の信頼度は低めです。");
+  if(flags.includes("low_confidence"))notes.push("最も近い思想でも一致度が低く、型がはっきりしない回答でした。");
+  return{code,codeProfile:profile,codeDetail:detail,typeKeys,typeLabel,displayType,ranked,an,si:Number(si.toFixed(3)),flags,notes};
 }
 
-// ===================================================
-// 思想ごとの色・アイコン
-// ===================================================
-const THOUGHT_META = {
-  existentialism: { color: "#a78bfa", icon: "🌑" },
-  stoicism:       { color: "#60a5fa", icon: "⚖️" },
-  utilitarianism: { color: "#34d399", icon: "📊" },
-  deontology:     { color: "#f59e0b", icon: "📜" },
-  epicureanism:   { color: "#fb923c", icon: "🌿" },
-  virtue_ethics:  { color: "#f472b6", icon: "🏛️" },
-  nihilism:       { color: "#f87171", icon: "🌀" },
-  skepticism:     { color: "#94a3b8", icon: "❓" },
-};
+// =====================================================
+// APP STATE
+// =====================================================
+let curPage=0,answers={},lastResult=null;
 
-// ===================================================
-// 結果説明テキスト
-// ===================================================
-const THOUGHT_DESC = {
-  existentialism: {
-    tagline: "「実存は本質に先立つ」",
-    body: "あなたは、人生にあらかじめ用意された意味や役割を認めず、自分が何者であるかは自らの選択の積み重ねによって決まっていくと考えます。自由であることは、同時にその選択への責任を引き受けることでもあります。不条理な世界の中でも、意味は与えられるものではなく自分の手で作り出すもの——それがあなたの根本にある感覚です。",
-    philosophers: ["サルトル", "キルケゴール", "ハイデガー", "カミュ"],
-  },
-  stoicism: {
-    tagline: "制御できるものに、心を注ぐ",
-    body: "あなたは、自分の力ではどうにもならない出来事に振り回されることを避け、自分が変えられる範囲——自らの判断や態度——に意識を集中させます。他人の評価や運に左右される幸福ではなく、何があっても揺らがない内なる平静にこそ価値を置きます。感情を理性で整え、起きたことを淡々と受け入れる強さが、あなたの芯になっています。",
-    philosophers: ["エピクテトス", "セネカ", "マルクス・アウレリウス"],
-  },
-  utilitarianism: {
-    tagline: "最大多数の、最大幸福",
-    body: "あなたは、行為の善し悪しを、それがもたらす幸福の総量で測ります。誰か一人の感情やルールそのものよりも、「全体としてどれだけ多くの人が、どれだけ幸福になるか」を重視する、実利的で社会志向の視点を持っています。冷静に損得を見渡し、より大きな善のために合理的な判断を下せるのが、あなたの強みです。",
-    philosophers: ["ベンサム", "J.S.ミル", "シンガー"],
-  },
-  deontology: {
-    tagline: "結果ではなく、なすべきことを",
-    body: "あなたは、たとえ結果が良くても、やってはいけないことは絶対にやってはいけないと考えます。行為の正しさは、それがもたらす損得ではなく「誰がやっても通用する原則」に従っているかどうかで決まる。嘘やごまかしでその場を丸く収めることを良しとしない、筋の通った倫理観が、あなたの背骨になっています。",
-    philosophers: ["カント"],
-  },
-  epicureanism: {
-    tagline: "心がざわつかない、静かな満足",
-    body: "あなたの言う「快」は、派手な刺激や欲望の充足ではありません。余計な欲を手放し、必要なものが満たされた状態に訪れる、穏やかで乱れのない心こそが本物の幸福だと感じています。多くを求めず、いま手にしている満足を深く味わう——そんな成熟した快楽の哲学が、あなたの中に息づいています。",
-    philosophers: ["エピクロス"],
-  },
-  virtue_ethics: {
-    tagline: "何をするかより、どんな人間であるか",
-    body: "あなたは、個々の行為が正しいかどうかを規則で判定するよりも、「自分がどんな人間であるか」「どう生きるか」を問います。極端を避けてほどよい中庸を選び、誠実さや勇気といった性格の徳を磨くことを大切にします。立派な人柄こそが良い行いの源泉だと考える、人間そのものに目を向けた倫理観です。",
-    philosophers: ["アリストテレス"],
-  },
-  nihilism: {
-    tagline: "世界に、もともと意味は無い",
-    body: "あなたは、世界にあらかじめ備わった意味や目的、絶対に正しい道徳といったものの存在を認めません。与えられた価値や前提を鵜呑みにせず、「本当にそうか？」と問い直す鋭い批判精神を持っています。意味の不在は絶望ではなく、むしろ既存の枠組みから自由になり、自分自身の価値を一から見つめ直すための出発点になりえます。",
-    philosophers: ["ニーチェ", "ショーペンハウアー"],
-  },
-  skepticism: {
-    tagline: "確実な答えは、誰にも分からない",
-    body: "あなたは、「これが絶対の真理だ」と性急に決めつけることを避けます。確実な答えの出ない問いに対しては、判断を保留することこそが誠実な態度だと考えます。あらゆる主張を一度立ち止まって吟味するその姿勢は、独断や思い込みに陥らないための、知的な慎重さの表れです。",
-    philosophers: ["ピュロン", "セクストス・エンペイリコス", "ヒューム"],
-  },
-};
+// =====================================================
+// NAVIGATION
+// =====================================================
+function navigate(sec){
+  // sec: 'shindan' | 'kaisetsu'
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+sec).classList.add('active');
+  if(sec==='shindan'){
+    // go to whichever shindan sub-page is current
+    if(lastResult){showP('p-result');}
+    else if(Object.keys(answers).length>0){showP('p-quiz');}
+    else{showP('p-start');}
+  } else {
+    showP('p-kaisetsu');
+  }
+  closeSB();
+}
 
-const LOW_CONFIDENCE_DESC = {
-  icon: "🧭",
-  tagline: "いまの“型”は、ひとつに定まらない",
-  body: "今回の回答は、特定の哲学思想にはっきりと寄ることがありませんでした。これは優柔不断ということではなく、問いや状況に応じて視点を柔軟に切り替えられる、バランス型の思考の表れとも言えます。下のチャートで、わずかに強く出ているあなたの傾向を確かめてみてください。",
-};
-
-const HYBRID_INTRO = "あなたの回答は1つの思想に偏らず、次の複数の傾向を併せ持っていました。それぞれがあなたの中で響き合い、輪郭をかたちづくっています。";
-
-// ===================================================
-// UI STATE
-// ===================================================
-let currentIdx = 0;
-let answers = {};  // { questionId: choiceId }
-
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+function showP(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function startQuiz() {
-  currentIdx = 0;
-  answers = {};
-  show('quiz');
-  renderQuestion();
+function toggleSB(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('on');
+}
+function closeSB(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('on');
 }
 
-function renderQuestion() {
-  const q = QUIZ.questions[currentIdx];
-  const total = QUIZ.questions.length;
-  const n = currentIdx + 1;
+// =====================================================
+// QUIZ
+// =====================================================
+function startQuiz(){
+  curPage=0; answers={}; lastResult=null;
+  document.getElementById('nav-shindan').classList.add('active');
+  document.getElementById('nav-kaisetsu').classList.remove('active');
+  showP('p-quiz');
+  renderPage();
+}
 
-  document.getElementById('q-counter').textContent = `${n} / ${total}`;
-  document.getElementById('prog-fill').style.width = `${((currentIdx) / total) * 100}%`;
-  document.getElementById('q-label').textContent = `Q ${n}`;
-  document.getElementById('q-text').textContent = q.text;
+const QPP=7;
+const B7=[
+  {cid:1,sz:'s1',side:'agree'},
+  {cid:2,sz:'s2',side:'agree'},
+  {cid:3,sz:'s3',side:'agree'},
+  {cid:4,sz:'s4',side:'neutral'},
+  {cid:5,sz:'s5',side:'dis'},
+  {cid:6,sz:'s6',side:'dis'},
+  {cid:7,sz:'s7',side:'dis'},
+];
 
-  const el = document.getElementById('choices');
-  el.innerHTML = '';
-  QUIZ.choices.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'choice-btn' + (c.id === 5 ? ' choice-5' : '');
-    if (answers[q.id] === c.id) btn.classList.add('selected');
-    btn.innerHTML = `<span class="choice-num">${c.id}</span><span>${c.label}</span>`;
-    btn.onclick = () => pick(q.id, c.id, btn);
-    el.appendChild(btn);
+function renderPage(){
+  const total=QUIZ.questions.length;
+  const totalPages=Math.ceil(total/QPP);
+  const start=curPage*QPP;
+  const end=Math.min(start+QPP,total);
+  const pageQs=QUIZ.questions.slice(start,end);
+
+  document.getElementById('q-page-ctr').textContent=`ページ ${curPage+1} / ${totalPages}`;
+  document.getElementById('prog').style.width=`${(curPage/totalPages)*100}%`;
+  document.getElementById('btn-prev-page').disabled=(curPage===0);
+  const isLast=(curPage+1>=totalPages);
+  const nextBtn=document.getElementById('btn-next-page');
+  nextBtn.textContent=isLast?'診断結果を見る →':'次のページへ →';
+
+  const listEl=document.getElementById('quiz-q-list');
+  listEl.innerHTML='';
+  pageQs.forEach((q,i)=>{
+    const qNum=start+i+1;
+    const cur=answers[q.id];
+    const bubblesHTML=B7.map(({cid,sz,side})=>{
+      let sc='';
+      if(cur===cid){sc=side==='agree'?' sel-a':side==='dis'?' sel-d':' sel-n';}
+      return `<button class="b7 ${sz} ${side}${sc}" onclick="pick7(${q.id},${cid})" title="${QUIZ.choices[cid-1]?.label||''}"></button>`;
+    }).join('');
+    const uCls=cur===8?' sel-u':'';
+    const row=document.createElement('div');
+    row.className='q-row';
+    row.id=`qrow-${q.id}`;
+    row.innerHTML=`
+      <div class="q-row-top">
+        <span class="q-row-num">Q${qNum}</span>
+        <span class="q-row-text">${q.text}</span>
+      </div>
+      <div class="scale7-ends"><span class="end-a">同意する</span><span class="end-d">同意しない</span></div>
+      <div class="scale7-bubbles">${bubblesHTML}</div>
+      <button class="btn-undecided${uCls}" onclick="pick7(${q.id},8)">答えようがない</button>
+    `;
+    listEl.appendChild(row);
+  });
+  checkPageComplete(pageQs);
+}
+
+function pick7(qId,cid){
+  answers[qId]=cid;
+  const row=document.getElementById(`qrow-${qId}`);
+  if(!row)return;
+  row.querySelectorAll('.b7').forEach((btn,i)=>{
+    btn.classList.remove('sel-a','sel-d','sel-n');
+    if(cid===i+1){
+      const side=B7[i].side;
+      btn.classList.add(side==='agree'?'sel-a':side==='dis'?'sel-d':'sel-n');
+    }
+  });
+  const ub=row.querySelector('.btn-undecided');
+  if(ub)ub.className='btn-undecided'+(cid===8?' sel-u':'');
+  const start=curPage*QPP;
+  const pageQs=QUIZ.questions.slice(start,Math.min(start+QPP,QUIZ.questions.length));
+  checkPageComplete(pageQs);
+}
+
+function checkPageComplete(pageQs){
+  const ok=pageQs.every(q=>answers[q.id]!=null);
+  document.getElementById('btn-next-page').disabled=!ok;
+}
+
+function nextPage(){
+  const totalPages=Math.ceil(QUIZ.questions.length/QPP);
+  if(curPage+1>=totalPages){showResult();}
+  else{curPage++;renderPage();window.scrollTo({top:0,behavior:'smooth'});}
+}
+
+function prevPage(){
+  if(curPage===0)return;
+  curPage--;
+  renderPage();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// =====================================================
+// RESULT
+// =====================================================
+function showResult(){
+  const scored=scoreQuiz(QUIZ,answers);
+  const res=decideResult(QUIZ,scored);
+  lastResult=res;
+
+  const grp=cg(res.code);
+
+  // Hero colors
+  const hero=document.getElementById('r-hero');
+  hero.style.setProperty('--hero-glow',grp.glow);
+  hero.style.setProperty('--hero-color',grp.color);
+
+  // Code letters
+  const codeEl=document.getElementById('r-code');
+  codeEl.innerHTML='';
+  const chars=[...res.code];
+  res.codeDetail.forEach((d,i)=>{
+    const box=document.createElement('div');
+    box.className='code-box'+(d.weak?' weak':'');
+    box.innerHTML=`<span class="code-char">${chars[i]}</span><span class="code-axis">${d.axis}</span>`;
+    codeEl.appendChild(box);
   });
 
-  // 最初の質問では「もどる」を無効化
-  document.getElementById('btn-back').disabled = (currentIdx === 0);
-}
+  // Alias & type
+  document.getElementById('r-alias').textContent=res.codeProfile?res.codeProfile.alias:res.code.toUpperCase();
+  document.getElementById('r-type').textContent=res.displayType;
 
-function goBack() {
-  if (currentIdx === 0) return;
-  currentIdx--;
-  renderQuestion();
-}
-
-function pick(qId, choiceId, btn) {
-  // ビジュアル更新
-  document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  answers[qId] = choiceId;
-
-  // 少し待ってから次へ
-  setTimeout(() => {
-    currentIdx++;
-    if (currentIdx < QUIZ.questions.length) {
-      renderQuestion();
-    } else {
-      showResult();
-    }
-  }, 350);
-}
-
-function showResult() {
-  const scored = score(QUIZ, answers);
-  const result = decideResult(QUIZ, scored);
-
-  // タイプ名
-  document.getElementById('r-type').textContent = result.displayType;
-
-  // アイコン: 1位の思想のアイコン
-  const topKey = result.typeKeys[0];
-  document.getElementById('r-icon').textContent = THOUGHT_META[topKey]?.icon || '🔮';
-
-  // ノート
-  const notesEl = document.getElementById('r-notes');
-  notesEl.innerHTML = '';
-  result.notes.forEach(n => {
-    const d = document.createElement('div');
-    d.className = 'note';
-    d.textContent = n;
+  // Notes
+  const notesEl=document.getElementById('r-notes');
+  notesEl.innerHTML='';
+  res.notes.forEach(n=>{
+    const d=document.createElement('div');
+    d.className='note-item';d.textContent=n;
     notesEl.appendChild(d);
   });
 
-  // 説明文
-  renderDescription(result);
+  // Description
+  const descSec=document.getElementById('r-desc-sec');
+  if(res.codeProfile){
+    descSec.style.display='';
+    document.getElementById('r-desc-text').textContent=res.codeProfile.desc;
+  } else {
+    descSec.style.display='none';
+  }
 
-  // チャート
-  const chartEl = document.getElementById('chart');
-  chartEl.innerHTML = '';
-  result.ranked.forEach(r => {
-    const meta = THOUGHT_META[r.key] || { color: '#888', icon: '' };
-    const pct = Math.round(r.norm * 100);
-    const row = document.createElement('div');
-    row.className = 'bar-row';
-    row.innerHTML = `
-      <div class="bar-name">${r.label}</div>
-      <div class="bar-track">
-        <div class="bar-fill" id="bf-${r.key}" style="background:${meta.color}"></div>
+  // Axes
+  const axEl=document.getElementById('r-axes');
+  axEl.innerHTML='';
+  res.codeDetail.forEach(d=>{
+    const ax=QUIZ.axes.find(a=>a.id===d.axis);
+    const pct=Math.round(Math.abs(d.value)*100);
+    const isPos=d.value>=0;
+    const row=document.createElement('div');
+    row.className='ax-row';
+    row.innerHTML=`
+      <div class="ax-head">
+        <span class="ax-pos-label">${ax.pos_label}(${ax.pos})</span>
+        <span class="ax-name">${ax.name}</span>
+        <span class="ax-neg-label">(${ax.neg})${ax.neg_label}</span>
       </div>
-      <div class="bar-pct">${pct}%</div>
+      <div class="ax-track">
+        <div class="ax-center"></div>
+        <div class="ax-fill ${isPos?'pos':'neg'}" id="axf-${d.axis}"></div>
+      </div>
+      <div class="ax-pct">${isPos?ax.pos_label:ax.neg_label} ${pct}%</div>
     `;
-    chartEl.appendChild(row);
+    axEl.appendChild(row);
   });
 
-  show('result');
+  // Thought bars (top 8)
+  const thEl=document.getElementById('r-thoughts');
+  thEl.innerHTML='';
+  res.ranked.slice(0,8).forEach(r=>{
+    const meta=TM[r.key]||{color:'#888'};
+    const pct=Math.round(r.norm*100);
+    const row=document.createElement('div');
+    row.className='th-row';
+    row.innerHTML=`
+      <div class="th-name">${r.label}</div>
+      <div class="th-track"><div class="th-fill" id="thf-${r.key}" style="background:${meta.color}"></div></div>
+      <div class="th-pct">${pct}%</div>
+    `;
+    thEl.appendChild(row);
+  });
 
-  // バーアニメーション（DOMが確定してから）
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      result.ranked.forEach(r => {
-        const el = document.getElementById(`bf-${r.key}`);
-        if (el) el.style.width = (r.norm * 100) + '%';
-      });
+  showP('p-result');
+
+  // Animate bars
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    res.codeDetail.forEach(d=>{
+      const pct=Math.abs(d.value)*50; // 50% of half-track = full side
+      const el=document.getElementById('axf-'+d.axis);
+      if(el)el.style.width=pct+'%';
     });
+    res.ranked.slice(0,8).forEach(r=>{
+      const el=document.getElementById('thf-'+r.key);
+      if(el)el.style.width=(r.norm*100)+'%';
+    });
+  }));
+}
+
+function resetQuiz(){
+  curPage=0; answers={}; lastResult=null;
+  showP('p-start');
+}
+
+// =====================================================
+// KAISETSU
+// =====================================================
+function initKaisetsu(){
+  // Axes
+  const axEl=document.getElementById('k-axes');
+  QUIZ.axes.forEach(ax=>{
+    const card=document.createElement('div');
+    card.className='ax-card';
+    card.innerHTML=`
+      <div class="ax-card-title">${ax.id} — ${ax.name}</div>
+      <div class="ax-poles">
+        <div class="pole">
+          <div class="pole-ch" style="color:#58a6ff">${ax.pos}</div>
+          <div class="pole-lbl">${ax.pos_label}</div>
+        </div>
+        <span class="pole-sep">⟷</span>
+        <div class="pole">
+          <div class="pole-ch" style="color:#f97316">${ax.neg}</div>
+          <div class="pole-lbl">${ax.neg_label}</div>
+        </div>
+      </div>
+      <div class="ax-card-desc">${AXDESC[ax.id]}</div>
+    `;
+    axEl.appendChild(card);
+  });
+
+  // Code profiles in 4 groups
+  const codesEl=document.getElementById('k-codes');
+  const groups=[
+    {prefix:'RC',label:'道徳実在 × 帰結重視'},
+    {prefix:'RP',label:'道徳実在 × 原則重視'},
+    {prefix:'AC',label:'反実在 × 帰結重視'},
+    {prefix:'AP',label:'反実在 × 原則重視'}
+  ];
+
+  groups.forEach(g=>{
+    const gc=CG[g.prefix];
+    const grpEl=document.createElement('div');
+    grpEl.className='code-group';
+    grpEl.innerHTML=`
+      <div class="group-head">
+        <span class="group-dot" style="background:${gc.color}"></span>
+        <span>${g.label}</span>
+      </div>
+      <div class="codes-grid" id="cg-${g.prefix}"></div>
+    `;
+    codesEl.appendChild(grpEl);
+
+    const grid=grpEl.querySelector('.codes-grid');
+    Object.entries(QUIZ.codeProfiles)
+      .filter(([k])=>k.startsWith(g.prefix))
+      .forEach(([k,p])=>{
+        const card=document.createElement('div');
+        card.className='code-card';
+        card.style.borderColor=gc.color+'44';
+        card.innerHTML=`
+          <span class="cc-badge" style="color:${gc.color};background:${gc.bg}">${k}</span>
+          <div class="cc-alias">${p.alias}</div>
+          <div class="cc-desc">${p.desc}</div>
+        `;
+        grid.appendChild(card);
+      });
   });
 }
 
-// ---- 説明文の描画 ----
-function renderDescription(result) {
-  const el = document.getElementById('r-desc');
-  el.innerHTML = '';
-
-  // 低信頼: 型がはっきりしない
-  if (result.flags.includes('low_confidence')) {
-    el.appendChild(buildCustomCard(LOW_CONFIDENCE_DESC, '#94a3b8'));
-    return;
-  }
-
-  // 単一型
-  if (result.typeKeys.length === 1) {
-    el.appendChild(buildThoughtCard(result.typeKeys[0]));
-    return;
-  }
-
-  // ハイブリッド型（2つ以上）
-  const intro = document.createElement('div');
-  intro.className = 'desc-intro';
-  intro.textContent = HYBRID_INTRO;
-  el.appendChild(intro);
-  result.typeKeys.forEach(key => el.appendChild(buildThoughtCard(key)));
-}
-
-function buildThoughtCard(key) {
-  const d = THOUGHT_DESC[key];
-  const meta = THOUGHT_META[key];
-  const label = QUIZ.thoughts[key];
-  const card = document.createElement('div');
-  card.className = 'desc-card';
-  card.style.setProperty('--card-accent', meta.color);
-  const philTags = d.philosophers.map(p => `<span class="phil-tag">${p}</span>`).join('');
-  card.innerHTML = `
-    <div class="desc-head">
-      <span class="desc-icon">${meta.icon}</span>
-      <div>
-        <div class="desc-name">${label}</div>
-        <div class="desc-tagline">${d.tagline}</div>
-      </div>
-    </div>
-    <p class="desc-body">${d.body}</p>
-    <div class="desc-phil-wrap">
-      <span class="desc-phil-label">代表的な哲学者</span>
-      <div class="phil-tags">${philTags}</div>
-    </div>
-  `;
-  return card;
-}
-
-// 哲学者タグを持たないシンプルなカード（低信頼用など）
-function buildCustomCard(d, color) {
-  const card = document.createElement('div');
-  card.className = 'desc-card';
-  card.style.setProperty('--card-accent', color);
-  card.innerHTML = `
-    <div class="desc-head">
-      <span class="desc-icon">${d.icon || '🔮'}</span>
-      <div>
-        <div class="desc-tagline">${d.tagline}</div>
-      </div>
-    </div>
-    <p class="desc-body">${d.body}</p>
-  `;
-  return card;
-}
-
-function resetQuiz() {
-  answers = {};
-  currentIdx = 0;
-  show('start');
-}
+// =====================================================
+// INIT
+// =====================================================
+initKaisetsu();
+showP('p-start');
 </script>
 </body>
 </html>
