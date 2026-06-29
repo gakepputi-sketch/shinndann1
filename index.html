@@ -108,6 +108,18 @@
   .choice-5 { border-style: dashed; color: var(--sub); font-size: 13px; }
   .choice-5.selected { color: var(--text); }
 
+  .quiz-nav { margin-top: 18px; }
+  .btn-back {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--sub); padding: 10px 20px;
+    border-radius: 50px; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .btn-back:hover { color: var(--text); border-color: var(--accent); background: #1e1e38; }
+  .btn-back:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-back:disabled:hover { color: var(--sub); border-color: var(--border); background: transparent; }
+
   /* ===== RESULT ===== */
   #result { padding-top: 16px; }
   .result-hero { text-align: center; padding: 48px 20px 36px; }
@@ -119,14 +131,28 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
 
-  /* プレースホルダー */
-  .result-desc-placeholder {
-    background: #1a1a2e; border: 1px dashed #3d3d6e;
-    border-radius: 16px; padding: 28px;
-    font-size: 13px; color: var(--sub); line-height: 1.7;
-    margin-bottom: 4px; text-align: left;
+  /* 結果説明 */
+  .desc-intro {
+    font-size: 14px; color: var(--sub); line-height: 1.8;
+    margin-bottom: 16px; padding: 0 4px; text-align: left;
   }
-  .result-desc-placeholder strong { color: #7c6aaf; display: block; margin-bottom: 8px; }
+  .desc-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--card-accent, var(--accent));
+    border-radius: 16px; padding: 26px; margin-bottom: 16px; text-align: left;
+  }
+  .desc-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .desc-icon { font-size: 34px; line-height: 1; flex-shrink: 0; }
+  .desc-name { font-size: 18px; font-weight: 700; color: var(--text); }
+  .desc-tagline { font-size: 13px; color: var(--card-accent, var(--accent)); font-weight: 600; margin-top: 4px; }
+  .desc-body { font-size: 14px; line-height: 1.9; color: #c8c8da; }
+  .desc-phil-wrap { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .desc-phil-label { font-size: 11px; color: var(--sub); letter-spacing: .08em; }
+  .phil-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .phil-tag {
+    background: #1e1e38; border: 1px solid var(--border);
+    border-radius: 16px; padding: 5px 14px; font-size: 12px; color: #c4b5fd;
+  }
 
   .notes-area { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
   .note {
@@ -195,6 +221,9 @@
       <div class="q-text" id="q-text"></div>
     </div>
     <div class="choices" id="choices"></div>
+    <div class="quiz-nav">
+      <button class="btn-back" id="btn-back" onclick="goBack()">← 前の質問にもどる</button>
+    </div>
   </div>
 
   <!-- RESULT -->
@@ -207,12 +236,8 @@
 
     <div id="r-notes" class="notes-area"></div>
 
-    <!-- 結果説明プレースホルダー -->
-    <div class="result-desc-placeholder">
-      <strong>📝 結果説明（準備中）</strong>
-      このタイプの詳細な説明・解説は準備中です。<br>
-      あなたの思想分布は下のチャートで確認できます。
-    </div>
+    <!-- 結果説明（動的生成） -->
+    <div id="r-desc"></div>
 
     <div style="height:20px"></div>
 
@@ -402,6 +427,60 @@ const THOUGHT_META = {
 };
 
 // ===================================================
+// 結果説明テキスト
+// ===================================================
+const THOUGHT_DESC = {
+  existentialism: {
+    tagline: "「実存は本質に先立つ」",
+    body: "あなたは、人生にあらかじめ用意された意味や役割を認めず、自分が何者であるかは自らの選択の積み重ねによって決まっていくと考えます。自由であることは、同時にその選択への責任を引き受けることでもあります。不条理な世界の中でも、意味は与えられるものではなく自分の手で作り出すもの——それがあなたの根本にある感覚です。",
+    philosophers: ["サルトル", "キルケゴール", "ハイデガー", "カミュ"],
+  },
+  stoicism: {
+    tagline: "制御できるものに、心を注ぐ",
+    body: "あなたは、自分の力ではどうにもならない出来事に振り回されることを避け、自分が変えられる範囲——自らの判断や態度——に意識を集中させます。他人の評価や運に左右される幸福ではなく、何があっても揺らがない内なる平静にこそ価値を置きます。感情を理性で整え、起きたことを淡々と受け入れる強さが、あなたの芯になっています。",
+    philosophers: ["エピクテトス", "セネカ", "マルクス・アウレリウス"],
+  },
+  utilitarianism: {
+    tagline: "最大多数の、最大幸福",
+    body: "あなたは、行為の善し悪しを、それがもたらす幸福の総量で測ります。誰か一人の感情やルールそのものよりも、「全体としてどれだけ多くの人が、どれだけ幸福になるか」を重視する、実利的で社会志向の視点を持っています。冷静に損得を見渡し、より大きな善のために合理的な判断を下せるのが、あなたの強みです。",
+    philosophers: ["ベンサム", "J.S.ミル", "シンガー"],
+  },
+  deontology: {
+    tagline: "結果ではなく、なすべきことを",
+    body: "あなたは、たとえ結果が良くても、やってはいけないことは絶対にやってはいけないと考えます。行為の正しさは、それがもたらす損得ではなく「誰がやっても通用する原則」に従っているかどうかで決まる。嘘やごまかしでその場を丸く収めることを良しとしない、筋の通った倫理観が、あなたの背骨になっています。",
+    philosophers: ["カント"],
+  },
+  epicureanism: {
+    tagline: "心がざわつかない、静かな満足",
+    body: "あなたの言う「快」は、派手な刺激や欲望の充足ではありません。余計な欲を手放し、必要なものが満たされた状態に訪れる、穏やかで乱れのない心こそが本物の幸福だと感じています。多くを求めず、いま手にしている満足を深く味わう——そんな成熟した快楽の哲学が、あなたの中に息づいています。",
+    philosophers: ["エピクロス"],
+  },
+  virtue_ethics: {
+    tagline: "何をするかより、どんな人間であるか",
+    body: "あなたは、個々の行為が正しいかどうかを規則で判定するよりも、「自分がどんな人間であるか」「どう生きるか」を問います。極端を避けてほどよい中庸を選び、誠実さや勇気といった性格の徳を磨くことを大切にします。立派な人柄こそが良い行いの源泉だと考える、人間そのものに目を向けた倫理観です。",
+    philosophers: ["アリストテレス"],
+  },
+  nihilism: {
+    tagline: "世界に、もともと意味は無い",
+    body: "あなたは、世界にあらかじめ備わった意味や目的、絶対に正しい道徳といったものの存在を認めません。与えられた価値や前提を鵜呑みにせず、「本当にそうか？」と問い直す鋭い批判精神を持っています。意味の不在は絶望ではなく、むしろ既存の枠組みから自由になり、自分自身の価値を一から見つめ直すための出発点になりえます。",
+    philosophers: ["ニーチェ", "ショーペンハウアー"],
+  },
+  skepticism: {
+    tagline: "確実な答えは、誰にも分からない",
+    body: "あなたは、「これが絶対の真理だ」と性急に決めつけることを避けます。確実な答えの出ない問いに対しては、判断を保留することこそが誠実な態度だと考えます。あらゆる主張を一度立ち止まって吟味するその姿勢は、独断や思い込みに陥らないための、知的な慎重さの表れです。",
+    philosophers: ["ピュロン", "セクストス・エンペイリコス", "ヒューム"],
+  },
+};
+
+const LOW_CONFIDENCE_DESC = {
+  icon: "🧭",
+  tagline: "いまの“型”は、ひとつに定まらない",
+  body: "今回の回答は、特定の哲学思想にはっきりと寄ることがありませんでした。これは優柔不断ということではなく、問いや状況に応じて視点を柔軟に切り替えられる、バランス型の思考の表れとも言えます。下のチャートで、わずかに強く出ているあなたの傾向を確かめてみてください。",
+};
+
+const HYBRID_INTRO = "あなたの回答は1つの思想に偏らず、次の複数の傾向を併せ持っていました。それぞれがあなたの中で響き合い、輪郭をかたちづくっています。";
+
+// ===================================================
 // UI STATE
 // ===================================================
 let currentIdx = 0;
@@ -439,6 +518,15 @@ function renderQuestion() {
     btn.onclick = () => pick(q.id, c.id, btn);
     el.appendChild(btn);
   });
+
+  // 最初の質問では「もどる」を無効化
+  document.getElementById('btn-back').disabled = (currentIdx === 0);
+}
+
+function goBack() {
+  if (currentIdx === 0) return;
+  currentIdx--;
+  renderQuestion();
 }
 
 function pick(qId, choiceId, btn) {
@@ -479,6 +567,9 @@ function showResult() {
     notesEl.appendChild(d);
   });
 
+  // 説明文
+  renderDescription(result);
+
   // チャート
   const chartEl = document.getElementById('chart');
   chartEl.innerHTML = '';
@@ -508,6 +599,73 @@ function showResult() {
       });
     });
   });
+}
+
+// ---- 説明文の描画 ----
+function renderDescription(result) {
+  const el = document.getElementById('r-desc');
+  el.innerHTML = '';
+
+  // 低信頼: 型がはっきりしない
+  if (result.flags.includes('low_confidence')) {
+    el.appendChild(buildCustomCard(LOW_CONFIDENCE_DESC, '#94a3b8'));
+    return;
+  }
+
+  // 単一型
+  if (result.typeKeys.length === 1) {
+    el.appendChild(buildThoughtCard(result.typeKeys[0]));
+    return;
+  }
+
+  // ハイブリッド型（2つ以上）
+  const intro = document.createElement('div');
+  intro.className = 'desc-intro';
+  intro.textContent = HYBRID_INTRO;
+  el.appendChild(intro);
+  result.typeKeys.forEach(key => el.appendChild(buildThoughtCard(key)));
+}
+
+function buildThoughtCard(key) {
+  const d = THOUGHT_DESC[key];
+  const meta = THOUGHT_META[key];
+  const label = QUIZ.thoughts[key];
+  const card = document.createElement('div');
+  card.className = 'desc-card';
+  card.style.setProperty('--card-accent', meta.color);
+  const philTags = d.philosophers.map(p => `<span class="phil-tag">${p}</span>`).join('');
+  card.innerHTML = `
+    <div class="desc-head">
+      <span class="desc-icon">${meta.icon}</span>
+      <div>
+        <div class="desc-name">${label}</div>
+        <div class="desc-tagline">${d.tagline}</div>
+      </div>
+    </div>
+    <p class="desc-body">${d.body}</p>
+    <div class="desc-phil-wrap">
+      <span class="desc-phil-label">代表的な哲学者</span>
+      <div class="phil-tags">${philTags}</div>
+    </div>
+  `;
+  return card;
+}
+
+// 哲学者タグを持たないシンプルなカード（低信頼用など）
+function buildCustomCard(d, color) {
+  const card = document.createElement('div');
+  card.className = 'desc-card';
+  card.style.setProperty('--card-accent', color);
+  card.innerHTML = `
+    <div class="desc-head">
+      <span class="desc-icon">${d.icon || '🔮'}</span>
+      <div>
+        <div class="desc-tagline">${d.tagline}</div>
+      </div>
+    </div>
+    <p class="desc-body">${d.body}</p>
+  `;
+  return card;
 }
 
 function resetQuiz() {
